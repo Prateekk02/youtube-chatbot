@@ -1,18 +1,18 @@
 from youtube_transcript_api._api import YouTubeTranscriptApi
-from youtube_transcript_api._errors import TranscriptsDisabled, NoTranscriptFound
- 
-from src.youtube.extractor import get_video_id  
+from youtube_transcript_api._errors import (
+    TranscriptsDisabled, NoTranscriptFound
+)
+import xml.etree.ElementTree as ET
+import time
 
-class TranscriptNotFoundError(RuntimeError):
-    ...
-
-def get_transcript(url: str, lang: str = "en") -> str:
-    video_id = get_video_id(url)
-    if not video_id:
-        raise ValueError("Could not extract video ID from URL")
-
-    try:
-        segments = YouTubeTranscriptApi.get_transcript(video_id, languages=[lang])
-        return " ".join(seg["text"].strip() for seg in segments if seg["text"].strip())
-    except (TranscriptsDisabled, NoTranscriptFound):
-        raise TranscriptNotFoundError("Transcript unavailable for this video")
+def get_transcript(video_id, lang="en", retries=3, delay=2):
+    for attempt in range(retries):
+        try:
+            t = YouTubeTranscriptApi.get_transcript(video_id, languages=[lang])
+            return " ".join(seg["text"] for seg in t)
+        except (TranscriptsDisabled, NoTranscriptFound):
+            raise              # nothing you can do
+        except ET.ParseError:  # empty body / bad XML
+            if attempt == retries - 1:
+                raise
+            time.sleep(delay * (attempt + 1))

@@ -15,6 +15,8 @@ class Settings:
     PINECONE_ENV = os.getenv("PINECONE_ENV")
     VECTOR_DB_INDEX = os.getenv("VECTOR_DB_INDEX")
     GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+    CHUNK_SIZE = os.getenv("CHUNK_SIZE")
+    CHUNK_OVERLAP = os.getenv("CHUNK_OVERLAP")
 
     # Optional fallback/defaults
     DEBUG = os.getenv("DEBUG", "False").lower() == "true"
